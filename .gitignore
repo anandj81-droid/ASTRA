@@ -1,0 +1,36 @@
+# Virtual Environment
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Database files (optional - if you want to exclude)
+# astra.db
+# astra.db.backup
+
+# Logs
+logs/
+*.log
+
+# PID files
+*.pid
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
