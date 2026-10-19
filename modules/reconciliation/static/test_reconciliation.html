@@ -1,0 +1,135 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Astra · Reconciliation Test</title>
+<style>
+  body{font:14px/1.5 system-ui,sans-serif;margin:0;background:#0f1117;color:#e6e8ef}
+  header{padding:16px 24px;border-bottom:1px solid #232636;display:flex;justify-content:space-between;align-items:center}
+  h1{font-size:16px;margin:0}
+  .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;padding:24px}
+  .panel{background:#171a24;border:1px solid #232636;border-radius:10px;padding:16px}
+  .panel h2{font-size:13px;margin:0 0 12px;color:#9aa3b8;text-transform:uppercase;letter-spacing:.5px}
+  button{background:#3b6df6;color:#fff;border:0;border-radius:6px;padding:8px 14px;cursor:pointer;font-size:13px}
+  button.ghost{background:#232636;color:#cfd4e2}
+  input,textarea{width:100%;background:#0f1117;border:1px solid #2a2f42;color:#e6e8ef;
+    border-radius:6px;padding:8px;font:13px monospace;box-sizing:border-box}
+  textarea{min-height:120px}
+  pre{background:#0b0d14;border:1px solid #232636;border-radius:6px;padding:10px;
+    max-height:280px;overflow:auto;font-size:12px;white-space:pre-wrap}
+  .row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+  label{display:block;font-size:12px;color:#9aa3b8;margin:8px 0 4px}
+  .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px}
+  .ok{background:#14351f;color:#5fd58a}.warn{background:#3a2a12;color:#f0b34b}.bad{background:#3a1618;color:#f06a72}
+</style>
+</head>
+<body>
+<header>
+  <h1>Reconciliation · Test Console</h1>
+  <div><button class="ghost" onclick="loadStatements()">Load statements</button></div>
+</header>
+<div class="grid">
+
+  <div class="panel">
+    <h2>1 · Import ledger</h2>
+    <label>Paste JSON (or use sample_ledger.json)</label>
+    <textarea id="ledgerJson">{ "entries": [] }</textarea>
+    <div class="row">
+      <button onclick="importLedger()">Import ledger</button>
+      <button class="ghost" onclick="importFromFx()">Import from FX</button>
+      <button class="ghost" onclick="loadSampleLedger()">Load sample</button>
+    </div>
+    <pre id="ledgerOut">—</pre>
+  </div>
+
+  <div class="panel">
+    <h2>2 · Import statement</h2>
+    <label>Upload .csv or .json</label>
+    <input type="file" id="stmtFile" accept=".csv,.json">
+    <div class="row">
+      <button onclick="uploadStatement()">Upload</button>
+      <button class="ghost" onclick="runReconciliation()">Run reconciliation</button>
+    </div>
+    <label>Run window</label>
+    <input id="start" value="2026-03-01">
+    <input id="end" value="2026-03-31" style="margin-top:6px">
+    <pre id="runOut">—</pre>
+  </div>
+
+  <div class="panel">
+    <h2>3 · Results</h2>
+    <div class="row">
+      <button class="ghost" onclick="showMatches()">Matches</button>
+      <button class="ghost" onclick="showDiscrepancies()">Discrepancies</button>
+      <button class="ghost" onclick="exportRun()">Export CSV</button>
+    </div>
+    <pre id="resultOut">—</pre>
+  </div>
+
+</div>
+<script>
+const TOKEN = localStorage.getItem("astra_token");
+const H = { "Content-Type": "application/json" };
+if (TOKEN) H["Authorization"] = "Bearer " + TOKEN;
+
+let currentRun = null;
+
+async function api(path, opts={}) {
+  opts.headers = Object.assign({}, H, opts.headers||{});
+  const r = await fetch(path, opts);
+  const t = await r.text();
+  try { return JSON.parse(t); } catch { return t; }
+}
+function show(id, data){ document.getElementById(id).textContent =
+  typeof data === "string" ? data : JSON.stringify(data, null, 2); }
+
+async function importLedger(){
+  const body = document.getElementById("ledgerJson").value;
+  show("ledgerOut", await api("/api/v1/reconciliation/ledger/import",
+    {method:"POST", body}));
+}
+async function importFromFx(){
+  show("ledgerOut", await api("/api/v1/reconciliation/ledger/import-from-fx?limit=200",
+    {method:"POST"}));
+}
+async function loadSampleLedger(){
+  const r = await fetch("/module-data/reconciliation/data/sample_ledger.json");
+  document.getElementById("ledgerJson").value = await r.text();
+}
+async function uploadStatement(){
+  const f = document.getElementById("stmtFile").files[0];
+  if(!f){ show("runOut","Pick a file first"); return; }
+  const fd = new FormData(); fd.append("file", f);
+  const r = await fetch("/api/v1/reconciliation/statements/import",
+    {method:"POST", headers: TOKEN?{Authorization:"Bearer "+TOKEN}:{}, body:fd});
+  show("runOut", await r.json());
+}
+async function runReconciliation(){
+  const payload = {
+    period_start: document.getElementById("start").value + "T00:00:00",
+    period_end:   document.getElementById("end").value + "T23:59:59"
+  };
+  const res = await api("/api/v1/reconciliation/runs", {method:"POST", body:JSON.stringify(payload)});
+  currentRun = res.run_id;
+  show("runOut", res);
+}
+async function showMatches(){
+  if(!currentRun){ show("resultOut","Run a reconciliation first"); return; }
+  show("resultOut", await api(`/api/v1/reconciliation/runs/${currentRun}/matches`));
+}
+async function showDiscrepancies(){
+  if(!currentRun){ show("resultOut","Run a reconciliation first"); return; }
+  show("resultOut", await api(`/api/v1/reconciliation/runs/${currentRun}/discrepancies`));
+}
+async function exportRun(){
+  if(!currentRun){ show("resultOut","Run a reconciliation first"); return; }
+  const r = await fetch(`/api/v1/reconciliation/runs/${currentRun}/export`,
+    {headers: TOKEN?{Authorization:"Bearer "+TOKEN}:{}});
+  show("resultOut", await r.text());
+}
+async function loadStatements(){
+  show("runOut", await api("/api/v1/reconciliation/statements"));
+}
+</script>
+</body>
+</html>

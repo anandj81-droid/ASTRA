@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Astra — Last Mile Expediter Test</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: #0a0e27; color: #e6edf3; padding: 24px; line-height: 1.5;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  header { margin-bottom: 24px; border-bottom: 1px solid #1f2937; padding-bottom: 16px; }
+  h1 { font-size: 22px; color: #58a6ff; margin-bottom: 4px; }
+  .subtitle { color: #8b949e; font-size: 13px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+  .card {
+    background: #0d1117; border: 1px solid #21262d;
+    border-radius: 8px; padding: 20px;
+  }
+  .card h2 { font-size: 15px; color: #58a6ff; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  label { display: block; font-size: 12px; color: #8b949e; margin-bottom: 4px; margin-top: 10px; }
+  input, select {
+    width: 100%; padding: 8px 10px; background: #010409;
+    border: 1px solid #30363d; border-radius: 6px; color: #e6edf3;
+    font-size: 14px; font-family: inherit;
+  }
+  input:focus, select:focus { outline: none; border-color: #58a6ff; }
+  button {
+    margin-top: 14px; width: 100%; padding: 10px 16px;
+    background: #238636; color: #fff; border: none; border-radius: 6px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  button:hover { background: #2ea043; }
+  button:disabled { background: #21262d; color: #484f58; cursor: not-allowed; }
+  .result { margin-top: 12px; font-size: 13px; }
+  .result pre {
+    background: #010409; padding: 12px; border-radius: 6px;
+    border: 1px solid #21262d; overflow-x: auto; font-size: 12px;
+    color: #7ee787;
+  }
+  .recommended {
+    background: linear-gradient(135deg, #1f6feb22, #23863622);
+    border: 1px solid #1f6feb; border-radius: 6px; padding: 12px; margin-top: 10px;
+  }
+  .recommended strong { color: #58a6ff; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #21262d; }
+  th { color: #8b949e; font-weight: 600; font-size: 11px; text-transform: uppercase; }
+  tr:hover td { background: #0d1117; }
+  .pill {
+    display: inline-block; padding: 2px 8px; border-radius: 10px;
+    font-size: 11px; font-weight: 600;
+  }
+  .pill-initiated { background: #1f6feb33; color: #58a6ff; }
+  .pill-settled   { background: #23863633; color: #7ee787; }
+  .pill-failed    { background: #f8514933; color: #ff7b72; }
+  .pill-in_flight { background: #d2992233; color: #e3b341; }
+  .status-line { margin-top: 10px; }
+  .muted { color: #8b949e; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>🛰️ Last Mile Expediter — Test Console</h1>
+    <div class="subtitle">Smart routing + real-time payment tracking · Astra Platform v4.0.0</div>
+  </header>
+
+  <div class="grid">
+    <!-- ─── Route a payment ─── -->
+    <div class="card">
+      <h2>① Route a Payment</h2>
+      <label>Source currency</label>
+      <input id="src" value="USD" maxlength="3">
+      <label>Target currency</label>
+      <input id="tgt" value="INR" maxlength="3">
+      <label>Amount</label>
+      <input id="amt" type="number" value="5000">
+      <label>Strategy</label>
+      <select id="strategy">
+        <option value="balanced" selected>balanced</option>
+        <option value="fastest">fastest</option>
+        <option value="cheapest">cheapest</option>
+      </select>
+      <button id="btnRoute">Find Best Bank →</button>
+      <div id="routeResult" class="result"></div>
+    </div>
+
+    <!-- ─── Track a payment ─── -->
+    <div class="card">
+      <h2>② Track a Payment</h2>
+      <label>Payment reference</label>
+      <input id="pref" value="PAY-TEST-001">
+      <button id="btnTrack">Fetch Status →</button>
+      <label style="margin-top:16px">Push status event</label>
+      <select id="evtStatus">
+        <option value="initiated">initiated</option>
+        <option value="in_flight">in_flight</option>
+        <option value="settled">settled</option>
+        <option value="failed">failed</option>
+      </select>
+      <input id="evtDetail" placeholder="detail (optional)" style="margin-top:6px">
+      <button id="btnPush">Push Event →</button>
+      <div id="statusResult" class="result"></div>
+    </div>
+  </div>
+
+  <!-- ─── Banks table ─── -->
+  <div class="card">
+    <h2>③ Registered Banks &amp; Performance</h2>
+    <table id="banksTable">
+      <thead>
+        <tr>
+          <th>Code</th><th>Name</th><th>Country</th>
+          <th>Corridors</th><th>Success</th><th>Settlement</th>
+        </tr>
+      </thead>
+      <tbody><tr><td colspan="6" class="muted">Loading…</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const API = location.origin;
+
+async function jget(url) {
+  const r = await fetch(url);
+  return r.json();
+}
+async function jpost(url, body) {
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(body)
+  });
+  return r.json();
+}
+
+function fmt(seconds) {
+  if (!seconds) return '—';
+  const h = Math.floor(seconds / 3600);
+  const m = Math.round((seconds % 3600) / 60);
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
+
+function pill(status) {
+  return `<span class="pill pill-${status}">${status}</span>`;
+}
+
+// ─── ① Route ───
+document.getElementById('btnRoute').onclick = async () => {
+  const btn = document.getElementById('btnRoute');
+  const out = document.getElementById('routeResult');
+  btn.disabled = true;
+  out.innerHTML = '<div class="muted">Routing…</div>';
+  try {
+    const data = await jpost(`${API}/api/v1/lastmile/route`, {
+      source_currency: document.getElementById('src').value.toUpperCase(),
+      target_currency: document.getElementById('tgt').value.toUpperCase(),
+      amount: parseFloat(document.getElementById('amt').value),
+      strategy: document.getElementById('strategy').value
+    });
+    if (!data.recommended) {
+      out.innerHTML = `<div class="muted">No banks available for ${data.corridor}.</div>`;
+      return;
+    }
+    const r = data.recommended;
+    out.innerHTML = `
+      <div class="recommended">
+        <strong>${r.bank_name}</strong> (${r.bank_code})<br>
+        <span class="muted">Score</span> ${r.score} ·
+        <span class="muted">Success</span> ${(r.success_rate*100).toFixed(1)}% ·
+        <span class="muted">Settles in</span> ${fmt(r.avg_settlement_seconds)}
+      </div>
+      <pre>${JSON.stringify(data, null, 2)}</pre>
+    `;
+  } catch (e) {
+    out.innerHTML = `<div style="color:#ff7b72">Error: ${e.message}</div>`;
+  } finally {
+    btn.disabled = false;
+  }
+};
+
+// ─── ② Track ───
+document.getElementById('btnTrack').onclick = async () => {
+  const out = document.getElementById('statusResult');
+  const ref = document.getElementById('pref').value;
+  out.innerHTML = '<div class="muted">Fetching…</div>';
+  try {
+    const data = await jget(`${API}/api/v1/lastmile/status/${encodeURIComponent(ref)}`);
+    if (!data.events || data.events.length === 0) {
+      out.innerHTML = `<div class="muted">No events for ${ref}.</div>`;
+      return;
+    }
+    const events = data.events.map(e =>
+      `<div class="status-line">${pill(e.status)}
+        <span class="muted">${e.occurred_at}</span>
+        ${e.detail ? `· ${e.detail}` : ''}</div>`
+    ).join('');
+    out.innerHTML = `<div>Current: ${pill(data.current_status)}</div>${events}`;
+  } catch (e) {
+    out.innerHTML = `<div style="color:#ff7b72">Error: ${e.message}</div>`;
+  }
+};
+
+document.getElementById('btnPush').onclick = async () => {
+  const ref = document.getElementById('pref').value;
+  const status = document.getElementById('evtStatus').value;
+  const detail = document.getElementById('evtDetail').value || null;
+  await jpost(`${API}/api/v1/lastmile/status/${encodeURIComponent(ref)}/event`,
+             { status, detail });
+  document.getElementById('btnTrack').click();
+};
+
+// ─── ③ Banks table ───
+async function loadBanks() {
+  const tbody = document.querySelector('#banksTable tbody');
+  try {
+    const banks = await jget(`${API}/api/v1/lastmile/banks`);
+    const rows = await Promise.all(banks.map(async b => {
+      const perf = await jget(`${API}/api/v1/lastmile/banks/${b.code}/performance`);
+      const primary = perf.corridors.find(c => c.corridor === 'USD-INR') || perf.corridors[0] || {};
+      return `<tr>
+        <td><strong>${b.code}</strong></td>
+        <td>${b.name}</td>
+        <td>${b.country}</td>
+        <td>${b.corridors.join(', ')}</td>
+        <td>${primary.success_rate != null ? (primary.success_rate*100).toFixed(1)+'%' : '—'}</td>
+        <td>${fmt(primary.avg_settlement_seconds)}</td>
+      </tr>`;
+    }));
+    tbody.innerHTML = rows.join('');
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="6" style="color:#ff7b72">Error: ${e.message}</td></tr>`;
+  }
+}
+
+loadBanks();
+</script>
+</body>
+</html>

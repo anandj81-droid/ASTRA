@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Astra — Last Mile Dashboard</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+         background: #0a0e27; color: #e6edf3; min-height: 100vh; }
+  .nav { background: #0d1117; border-bottom: 1px solid #21262d;
+         padding: 14px 24px; display: flex; align-items: center; gap: 24px; }
+  .nav .brand { font-weight: 700; color: #58a6ff; font-size: 16px; }
+  .nav a { color: #8b949e; text-decoration: none; font-size: 13px; }
+  .nav a.active { color: #58a6ff; }
+  .nav a:hover { color: #58a6ff; }
+  .main { padding: 32px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 24px; margin-bottom: 6px; }
+  .sub { color: #8b949e; margin-bottom: 28px; font-size: 13px; }
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+  .tile { background: #0d1117; border: 1px solid #21262d; border-radius: 8px; padding: 20px; }
+  .tile .k { font-size: 11px; text-transform: uppercase; color: #8b949e; letter-spacing: 0.5px; }
+  .tile .v { font-size: 26px; font-weight: 700; color: #58a6ff; margin-top: 6px; }
+  .card { background: #0d1117; border: 1px solid #21262d; border-radius: 8px; padding: 20px; }
+  .card h2 { font-size: 14px; color: #58a6ff; margin-bottom: 14px; text-transform: uppercase; }
+  .actions { display: flex; gap: 12px; }
+  .btn { display: inline-block; padding: 10px 18px; background: #238636; color: #fff;
+         text-decoration: none; border-radius: 6px; font-size: 13px; font-weight: 600; }
+  .btn:hover { background: #2ea043; }
+  .btn-secondary { background: #1f6feb; }
+  .btn-secondary:hover { background: #388bfd; }
+  pre { background: #010409; padding: 14px; border-radius: 6px;
+        border: 1px solid #21262d; color: #7ee787; font-size: 12px;
+        overflow-x: auto; margin-top: 12px; }
+</style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="brand">ASTRA</div>
+    <a href="/dashboard">FX Tool</a>
+    <a href="/testcost">Cost Optimizer</a>
+    <a href="/testlastmile" class="active">Last Mile</a>
+    <a href="/modules">Modules</a>
+    <a href="/docs">API Docs</a>
+  </nav>
+
+  <div class="main">
+    <h1>🛰️ Last Mile Expediter</h1>
+    <div class="sub">Smart bank routing + real-time payment status tracking</div>
+
+    <div class="tiles">
+      <div class="tile"><div class="k">Registered Banks</div><div class="v" id="tBanks">—</div></div>
+      <div class="tile"><div class="k">Active Corridors</div><div class="v" id="tCorridors">—</div></div>
+      <div class="tile"><div class="k">Avg Success Rate</div><div class="v" id="tSuccess">—</div></div>
+    </div>
+
+    <div class="card">
+      <h2>Quick Actions</h2>
+      <div class="actions">
+        <a class="btn" href="/testlastmile">Open Test Console</a>
+        <a class="btn btn-secondary" href="/docs#/Last%20Mile">API Docs — Last Mile</a>
+      </div>
+      <pre id="snapshot">Loading snapshot…</pre>
+    </div>
+  </div>
+
+<script>
+async function jget(u){ return (await fetch(u)).json(); }
+
+(async () => {
+  try {
+    const banks = await jget('/api/v1/lastmile/banks');
+    document.getElementById('tBanks').textContent = banks.length;
+
+    const corridorSet = new Set();
+    banks.forEach(b => b.corridors.forEach(c => corridorSet.add(c)));
+    document.getElementById('tCorridors').textContent = corridorSet.size;
+
+    const perfs = await Promise.all(
+      banks.map(b => jget(`/api/v1/lastmile/banks/${b.code}/performance`))
+    );
+    const rates = perfs.flatMap(p => p.corridors.map(c => c.success_rate))
+                       .filter(x => x != null);
+    const avg = rates.length ? rates.reduce((a,b)=>a+b,0)/rates.length : 0;
+    document.getElementById('tSuccess').textContent = `${(avg*100).toFixed(1)}%`;
+
+    document.getElementById('snapshot').textContent =
+      JSON.stringify({ banks: banks.length, corridors: [...corridorSet].sort(), avg_success_rate: avg }, null, 2);
+  } catch (e) {
+    document.getElementById('snapshot').textContent = 'Error: ' + e.message;
+  }
+})();
+</script>
+</body>
+</html>

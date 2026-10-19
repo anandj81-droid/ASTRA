@@ -1,0 +1,14 @@
+{
+  "entries": [
+    {"external_id": "FX-1001", "date": "2026-03-01T10:00:00", "amount": 1000.00, "currency": "USD", "party": "Acme Exports",     "reference": "FX-1001", "direction": "debit"},
+    {"external_id": "FX-1002", "date": "2026-03-02T10:00:00", "amount": 2500.00, "currency": "USD", "party": "Beta Trading",     "reference": "FX-1002", "direction": "debit"},
+    {"external_id": "FX-1003", "date": "2026-03-03T10:00:00", "amount": 500.00,  "currency": "EUR", "party": "Gamma GmbH",       "reference": "FX-1003", "direction": "debit"},
+    {"external_id": "FX-1004", "date": "2026-03-04T10:00:00", "amount": 780.00,  "currency": "GBP", "party": "Delta Ltd",        "reference": "FX-1004", "direction": "debit"},
+    {"external_id": "FX-1005", "date": "2026-03-05T10:00:00", "amount": 1200.00, "currency": "USD", "party": "Epsilon Corp",     "reference": "FX-1005", "direction": "debit"},
+    {"external_id": "FX-1006", "date": "2026-03-06T10:00:00", "amount": 450.00,  "currency": "USD", "party": "Nobody Inc",       "reference": "FX-1006", "direction": "debit"},
+    {"external_id": "FX-1007", "date": "2026-03-07T10:00:00", "amount": 950.00,  "currency": "USD", "party": "Zeta Logistics",   "reference": "FX-1007", "direction": "debit"},
+    {"external_id": "FX-1008", "date": "2026-03-08T10:00:00", "amount": 1100.00, "currency": "USD", "party": "Eta Industries",   "reference": "FX-1008", "direction": "debit"},
+    {"external_id": "FX-1009", "date": "2026-03-09T10:00:00", "amount": 700.00,  "currency": "USD", "party": "Iota Systems",     "reference": "FX-1009", "direction": "debit"},
+    {"external_id": "FX-1010", "date": "2026-03-10T10:00:00", "amount": 640.00,  "currency": "EUR", "party": "Theta SA",         "reference": "FX-1010", "direction": "debit"}
+  ]
+}

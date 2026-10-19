@@ -1,0 +1,74 @@
+{
+  "lines": [
+    {
+      "txn_ref": "FX-1001",
+      "value_date": "2026-03-01",
+      "amount": 1000.0,
+      "currency": "USD",
+      "counterparty": "Acme Exports"
+    },
+    {
+      "txn_ref": "FX-1002",
+      "value_date": "2026-03-02",
+      "amount": 2500.0,
+      "currency": "USD",
+      "counterparty": "Beta Trading"
+    },
+    {
+      "txn_ref": "FX-1003",
+      "value_date": "2026-03-03",
+      "amount": 500.0,
+      "currency": "USD",
+      "counterparty": "Gamma GmbH"
+    },
+    {
+      "txn_ref": "FX-1004",
+      "value_date": "2026-03-04",
+      "amount": 780.0,
+      "currency": "USD",
+      "counterparty": "Delta Ltd"
+    },
+    {
+      "txn_ref": "FX-1005",
+      "value_date": "2026-03-05",
+      "amount": 1200.0,
+      "currency": "USD",
+      "counterparty": "Epsilon Corp"
+    },
+    {
+      "txn_ref": "FX-1007",
+      "value_date": "2026-03-07",
+      "amount": 950.0,
+      "currency": "USD",
+      "counterparty": "Zeta Logistics"
+    },
+    {
+      "txn_ref": "FX-1008",
+      "value_date": "2026-03-08",
+      "amount": 1100.0,
+      "currency": "USD",
+      "counterparty": "Eta Industries"
+    },
+    {
+      "txn_ref": "FX-1008",
+      "value_date": "2026-03-08",
+      "amount": 1100.0,
+      "currency": "USD",
+      "counterparty": "Eta Industries"
+    },
+    {
+      "txn_ref": "FX-1010",
+      "value_date": "2026-03-10",
+      "amount": 640.0,
+      "currency": "USD",
+      "counterparty": "Theta SA"
+    },
+    {
+      "txn_ref": "FX-9999",
+      "value_date": "2026-03-11",
+      "amount": 300.0,
+      "currency": "USD",
+      "counterparty": "Unknown Party"
+    }
+  ]
+}

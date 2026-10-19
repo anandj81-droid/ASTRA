@@ -1,0 +1,43 @@
+# Python
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Database
+*.db
+*.db.bak
+*.bak
+*.db.backup
+*.db-wal
+*.db-shm
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Logs & runtime
+logs/
+pids/
+iso_messages/
+manual_messages/
+celerybeat-schedule
+celerybeat.pid
+
+# Archive (local only)
+archive/
+
+# Freeze artifacts (audit-only, regenerable)
+requirements-freeze.txt
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.vscode/
+.idea/

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Astra — Cost Optimizer Test</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 24px;
+    color: #1f2937;
+  }
+  .container { max-width: 1200px; margin: 0 auto; }
+  .card {
+    background: white;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    margin-bottom: 20px;
+  }
+  h1 { font-size: 28px; margin-bottom: 8px; }
+  h2 { font-size: 20px; margin-bottom: 16px; color: #374151; }
+  .subtitle { color: #6b7280; font-size: 14px; margin-bottom: 24px; }
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 12px;
+    align-items: end;
+  }
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #4b5563;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  input, select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 15px;
+    transition: border-color 0.2s;
+  }
+  input:focus, select:focus {
+    outline: none;
+    border-color: #667eea;
+  }
+  button {
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    white-space: nowrap;
+  }
+  button:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(102,126,234,0.4); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .btn-secondary {
+    background: #f3f4f6;
+    color: #374151;
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+  .btn-secondary:hover { background: #e5e7eb; box-shadow: none; }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .stat {
+    background: linear-gradient(135deg, #f9fafb, #f3f4f6);
+    padding: 16px;
+    border-radius: 12px;
+    border-left: 4px solid #667eea;
+  }
+  .stat-label { font-size: 11px; text-transform: uppercase; color: #6b7280; letter-spacing: 0.5px; }
+  .stat-value { font-size: 22px; font-weight: 700; margin-top: 4px; color: #111827; }
+  .stat-value.green { color: #059669; }
+  .stat-value.red { color: #dc2626; }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  th {
+    text-align: left;
+    padding: 12px;
+    background: #f9fafb;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #6b7280;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e5e7eb;
+  }
+  td {
+    padding: 14px 12px;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 14px;
+  }
+  tr.best { background: #f0fdf4; }
+  tr.best td { font-weight: 600; }
+  tr.worst { background: #fef2f2; }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge-best { background: #10b981; color: white; }
+  .badge-worst { background: #ef4444; color: white; }
+  .badge-normal { background: #e5e7eb; color: #4b5563; }
+  .badge-provider {
+    background: #ede9fe;
+    color: #6d28d9;
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  .savings {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #92400e;
+    padding: 16px 20px;
+    border-radius: 12px;
+    font-size: 15px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .savings-icon { font-size: 24px; }
+  .savings strong { font-size: 18px; }
+
+  .spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 3px solid rgba(255,255,255,0.4);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error {
+    background: #fef2f2;
+    color: #991b1b;
+    padding: 14px 18px;
+    border-radius: 10px;
+    border-left: 4px solid #dc2626;
+    margin-top: 12px;
+  }
+  .hidden { display: none; }
+
+  .footer-links {
+    text-align: center;
+    margin-top: 24px;
+    color: rgba(255,255,255,0.8);
+    font-size: 13px;
+  }
+  .footer-links a { color: white; text-decoration: none; margin: 0 8px; }
+  .footer-links a:hover { text-decoration: underline; }
+
+  @media (max-width: 720px) {
+    .form-row { grid-template-columns: 1fr; }
+    .summary-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="card">
+    <h1>💰 Cost Optimizer</h1>
+    <p class="subtitle">Compare payment providers and find the cheapest route for your transfer.</p>
+
+    <div class="form-row">
+      <div>
+        <label>From Currency</label>
+        <select id="base">
+          <option value="USD" selected>USD — US Dollar</option>
+          <option value="EUR">EUR — Euro</option>
+          <option value="GBP">GBP — British Pound</option>
+          <option value="SGD">SGD — Singapore Dollar</option>
+          <option value="AED">AED — UAE Dirham</option>
+        </select>
+      </div>
+      <div>
+        <label>To Currency</label>
+        <select id="quote">
+          <option value="INR" selected>INR — Indian Rupee</option>
+          <option value="EUR">EUR — Euro</option>
+          <option value="GBP">GBP — British Pound</option>
+          <option value="BRL">BRL — Brazilian Real</option>
+        </select>
+      </div>
+      <div>
+        <label>Amount (in From currency)</label>
+        <input type="number" id="amount" value="1000" min="1" step="1">
+      </div>
+      <div>
+        <button id="compareBtn" onclick="compare()">Compare →</button>
+      </div>
+    </div>
+
+    <div id="error" class="error hidden"></div>
+  </div>
+
+  <div id="results" class="hidden">
+    <div class="card">
+      <h2>📊 Summary</h2>
+      <div class="summary-grid">
+        <div class="stat">
+          <div class="stat-label">Mid-Market Rate</div>
+          <div class="stat-value" id="midRate">—</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Best Provider</div>
+          <div class="stat-value green" id="bestProvider">—</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Worst Provider</div>
+          <div class="stat-value red" id="worstProvider">—</div>
+        </div>
+      </div>
+
+      <div class="savings" id="savingsBox">
+        <span class="savings-icon">💡</span>
+        <span>
+          By choosing the best provider, you save
+          <strong id="savingsAmount">—</strong>
+          compared to the worst option.
+        </span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📋 All Providers (ranked cheapest first)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Provider</th>
+            <th>Rate Markup</th>
+            <th>Fees</th>
+            <th>Total Cost</th>
+            <th>Recipient Gets</th>
+            <th>Settlement</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="footer-links">
+    <a href="/dashboard">← Dashboard</a>
+    <a href="/modules">Modules</a>
+    <a href="/docs">API Docs</a>
+  </div>
+</div>
+
+<script>
+const API = window.location.origin;
+
+async function getToken() {
+  const stored = localStorage.getItem('astra_token');
+  if (stored) return stored;
+  // Fall back to default dev login
+  const r = await fetch(`${API}/auth/login`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({email: 'test@astra.com', password: 'Test@123'})
+  });
+  if (!r.ok) throw new Error('Login failed');
+  const data = await r.json();
+  localStorage.setItem('astra_token', data.access_token);
+  return data.access_token;
+}
+
+function fmt(n, digits = 2) {
+  if (n == null) return '—';
+  return Number(n).toLocaleString('en-US', {minimumFractionDigits: digits, maximumFractionDigits: digits});
+}
+
+async function compare() {
+  const btn = document.getElementById('compareBtn');
+  const errEl = document.getElementById('error');
+  errEl.classList.add('hidden');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Comparing...';
+
+  try {
+    const token = await getToken();
+    const base = document.getElementById('base').value;
+    const quote = document.getElementById('quote').value;
+    const amount = parseFloat(document.getElementById('amount').value);
+
+    const r = await fetch(`${API}/api/v1/cost/compare?base=${base}&quote=${quote}&amount=${amount}`, {
+      headers: {'Authorization': `Bearer ${token}`}
+    });
+
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({detail: r.statusText}));
+      throw new Error(err.detail || 'Compare failed');
+    }
+
+    const data = await r.json();
+    render(data);
+  } catch (e) {
+    errEl.textContent = '⚠️ ' + e.message;
+    errEl.classList.remove('hidden');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Compare →';
+  }
+}
+
+function render(data) {
+  document.getElementById('results').classList.remove('hidden');
+  document.getElementById('midRate').textContent = data.mid_market_rate;
+  document.getElementById('bestProvider').textContent = data.best.provider_display_name;
+  document.getElementById('worstProvider').textContent = data.worst.provider_display_name;
+  document.getElementById('savingsAmount').textContent =
+    `${data.input.base} ${fmt(data.max_savings)}`;
+
+  const tbody = document.getElementById('resultsBody');
+  tbody.innerHTML = '';
+
+  data.results.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    if (i === 0) tr.classList.add('best');
+    if (i === data.results.length - 1) tr.classList.add('worst');
+
+    let badge = '<span class="badge badge-normal">—</span>';
+    if (i === 0) badge = '<span class="badge badge-best">Best</span>';
+    if (i === data.results.length - 1) badge = '<span class="badge badge-worst">Worst</span>';
+
+    tr.innerHTML = `
+      <td>${i + 1} ${badge}</td>
+      <td><span class="badge badge-provider">${r.provider_display_name}</span></td>
+      <td>${r.rate_markup_pct}%<br><small style="color:#9ca3af">${fmt(r.rate_markup_cost)} ${data.input.base}</small></td>
+      <td>${fmt(r.total_fee)} ${data.input.base}</td>
+      <td><strong>${fmt(r.total_cost)} ${data.input.base}</strong></td>
+      <td>${fmt(r.recipient_gets)} ${data.input.quote}</td>
+      <td>${r.settlement_days === 0 ? 'Instant' : 'T+' + r.settlement_days}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// Auto-run once on page load
+window.addEventListener('load', () => {
+  compare().catch(() => {});
+});
+</script>
+</body>
+</html>

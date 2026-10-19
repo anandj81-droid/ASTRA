@@ -1,0 +1,11 @@
+txn_ref,value_date,amount,ccy,counterparty,narration,status
+FX-1001,2026-03-01,1000.00,USD,Acme Exports,March settlement,settled
+FX-1002,2026-03-02,2500.00,USD,Beta Trading,Invoice 4471,settled
+FX-1003,2026-03-03,500.00,EUR,Gamma GmbH,Consulting fee,settled
+FX-1004,2026-03-04,780.00,GBP,Delta Ltd,Subscription,settled
+FX-1005,2026-03-05,1200.00,USD,Epsilon Corp,March retainer,settled
+FX-1007,2026-03-07,950.00,USD,Zeta Logistics,Freight,settled
+FX-1008,2026-03-08,1100.00,USD,Eta Industries,Invoice 4490,settled
+FX-1008,2026-03-08,1100.00,USD,Eta Industries,Invoice 4490 (dup),settled
+FX-1010,2026-03-10,640.00,EUR,Theta SA,Services,settled
+FX-9999,2026-03-11,300.00,USD,Unknown Party,Orphan line,settled

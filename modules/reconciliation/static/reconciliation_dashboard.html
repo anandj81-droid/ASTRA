@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Astra · Reconciliation Dashboard</title>
+<style>
+  body{font:14px/1.5 system-ui,sans-serif;margin:0;background:#0f1117;color:#e6e8ef}
+  header{padding:16px 24px;border-bottom:1px solid #232636}
+  h1{font-size:16px;margin:0}
+  .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding:24px}
+  .tile{background:#171a24;border:1px solid #232636;border-radius:10px;padding:20px}
+  .tile .k{font-size:12px;color:#9aa3b8;text-transform:uppercase;letter-spacing:.5px}
+  .tile .v{font-size:28px;font-weight:600;margin-top:6px}
+  .panel{margin:0 24px 24px;background:#171a24;border:1px solid #232636;border-radius:10px;padding:16px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:8px 6px;border-bottom:1px solid #232636}
+  th{color:#9aa3b8;font-weight:500}
+  .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px}
+  .ok{background:#14351f;color:#5fd58a}.warn{background:#3a2a12;color:#f0b34b}.bad{background:#3a1618;color:#f06a72}
+</style>
+</head>
+<body>
+<header><h1>Reconciliation · Dashboard</h1></header>
+
+<div class="tiles">
+  <div class="tile"><div class="k">Runs</div><div class="v" id="tRuns">—</div></div>
+  <div class="tile"><div class="k">Match Rate (latest)</div><div class="v" id="tRate">—</div></div>
+  <div class="tile"><div class="k">Open Discrepancies</div><div class="v" id="tOpen">—</div></div>
+  <div class="tile"><div class="k">Value Reconciled</div><div class="v" id="tValue">—</div></div>
+</div>
+
+<div class="panel">
+  <table>
+    <thead><tr><th>Run</th><th>Period</th><th>Ledger</th><th>Statement</th><th>Matched</th><th>Discrepancies</th><th>Rate</th><th>Status</th></tr></thead>
+    <tbody id="runsBody"><tr><td colspan="8">Loading…</td></tr></tbody>
+  </table>
+</div>
+
+<script>
+const TOKEN = localStorage.getItem("astra_token");
+const H = TOKEN ? {Authorization:"Bearer "+TOKEN} : {};
+async function j(path){ const r = await fetch(path,{headers:H}); return r.json(); }
+
+async function load(){
+  const runs = (await j("/api/v1/reconciliation/runs")).items || [];
+  document.getElementById("tRuns").textContent = runs.length;
+  if(runs.length){
+    const latest = runs[0];
+    document.getElementById("tRate").textContent = (latest.match_rate*100).toFixed(1) + "%";
+  } else {
+    document.getElementById("tRate").textContent = "—";
+  }
+  const tb = document.getElementById("runsBody");
+  tb.innerHTML = runs.length ? runs.map(r => `
+    <tr>
+      <td>#${r.id}</td>
+      <td>${r.period_start.slice(0,10)} → ${r.period_end.slice(0,10)}</td>
+      <td>${r.total_ledger}</td><td>${r.total_statement}</td>
+      <td>${r.matched}</td><td>${r.discrepancies}</td>
+      <td>${(r.match_rate*100).toFixed(1)}%</td>
+      <td><span class="pill ${r.discrepancies? 'warn':'ok'}">${r.status}</span></td>
+    </tr>`).join("") : `<tr><td colspan="8">No runs yet.</td></tr>`;
+
+  let open = 0;
+  for(const r of runs){
+    try{
+      const d = (await j(`/api/v1/reconciliation/runs/${r.id}/discrepancies`)).items || [];
+      open += d.filter(x => x.status === "open").length;
+    }catch(e){}
+  }
+  document.getElementById("tOpen").textContent = open;
+}
+load();
+</script>
+</body>
+</html>
