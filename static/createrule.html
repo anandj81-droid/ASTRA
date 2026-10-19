@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Rule - Astra Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 24px 32px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .header a {
+            color: white;
+            text-decoration: none;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: background 0.3s;
+        }
+        .header a:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .card h2 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 16px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            background: white;
+        }
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+        }
+        .btn {
+            padding: 12px 32px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 100%;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #555;
+        }
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+        .currency-display {
+            background: #f8f9fa;
+            padding: 16px 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin: 12px 0;
+        }
+        .currency-display .rate {
+            color: #667eea;
+            font-size: 24px;
+        }
+        .rate-display {
+            background: #f0f4ff;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 8px;
+        }
+        .rate-display .label {
+            font-size: 12px;
+            color: #888;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .rate-display .value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        .prediction-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-top: 8px;
+        }
+        .prediction-item {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 12px;
+            text-align: center;
+        }
+        .prediction-item .period {
+            font-size: 12px;
+            color: #888;
+            font-weight: 600;
+        }
+        .prediction-item .rate {
+            font-size: 16px;
+            font-weight: 600;
+            color: #667eea;
+        }
+        .hidden {
+            display: none;
+        }
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+            max-width: 400px;
+        }
+        .toast-success { background: #10b981; }
+        .toast-error { background: #ef4444; }
+        .toast-info { background: #3b82f6; }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #e0e0e0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        @media (max-width: 768px) {
+            .form-row { grid-template-columns: 1fr; }
+            .form-row-3 { grid-template-columns: 1fr; }
+            .prediction-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>➕ Create New Rule</h1>
+            <a href="/dashboard">← Back to Dashboard</a>
+        </div>
+
+        <div class="card">
+            <h2>📊 Select Currency Pair</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="sourceCurrency">Source Currency</label>
+                    <select id="sourceCurrency">
+                        <option value="">-- Select --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="targetCurrency">Target Currency</label>
+                    <select id="targetCurrency">
+                        <option value="">-- Select --</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="currencyDisplay" class="hidden">
+                <div class="currency-display">
+                    <span id="sourceSymbol">$</span> 1 <span id="sourceCode">USD</span>
+                    <span style="margin: 0 20px;">➜</span>
+                    <span id="targetSymbol">₹</span> <span class="rate" id="exchangeRate">--</span> <span id="targetCode">INR</span>
+                </div>
+            </div>
+
+            <div id="predictionsDisplay" class="hidden">
+                <div class="rate-display">
+                    <div class="label">🤖 AI Predicted Rate</div>
+                    <div class="prediction-grid">
+                        <div class="prediction-item">
+                            <div class="period">1 Day</div>
+                            <div class="rate" id="pred1d">--</div>
+                        </div>
+                        <div class="prediction-item">
+                            <div class="period">1 Week</div>
+                            <div class="rate" id="pred1w">--</div>
+                        </div>
+                        <div class="prediction-item">
+                            <div class="period">1 Month</div>
+                            <div class="rate" id="pred1m">--</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>⚙️ Rule Configuration</h2>
+
+            <div class="form-group">
+                <label for="amount">Enter Source Currency Amount</label>
+                <input type="number" id="amount" placeholder="e.g., 10000" min="0" step="1">
+            </div>
+
+            <div class="form-group">
+                <label for="transferType">Transfer Type</label>
+                <select id="transferType">
+                    <option value="target_rate">🎯 Target Rate</option>
+                    <option value="predictive">🤖 AI Predicted</option>
+                    <option value="schedule">📅 Scheduled</option>
+                </select>
+            </div>
+
+            <div id="targetRateGroup" class="form-group">
+                <label for="targetRate">Target Currency Rate</label>
+                <input type="number" id="targetRate" placeholder="e.g., 85.0" min="0" step="0.01">
+            </div>
+
+            <div id="scheduleGroup" class="hidden">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="scheduleDay">Day of Month</label>
+                        <input type="number" id="scheduleDay" placeholder="1-31" min="1" max="31">
+                    </div>
+                    <div class="form-group">
+                        <label for="scheduleTime">Time (HH:MM)</label>
+                        <input type="time" id="scheduleTime" value="10:00">
+                    </div>
+                </div>
+            </div>
+
+            <div id="predictiveGroup" class="hidden">
+                <div class="form-group">
+                    <label for="minConfidence">Minimum Confidence (%)</label>
+                    <input type="number" id="minConfidence" placeholder="70" min="50" max="99" value="70">
+                </div>
+            </div>
+
+            <button class="btn btn-primary" id="createRuleBtn">🚀 Create Rule</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '';
+        let currentRate = null;
+        let predictions = null;
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 5000);
+        }
+
+        async function loadCurrencies() {
+            try {
+                const token = localStorage.getItem('access_token');
+                if (!token) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                const response = await fetch('/currencies', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.status === 401) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                const data = await response.json();
+                const sourceSelect = document.getElementById('sourceCurrency');
+                const targetSelect = document.getElementById('targetCurrency');
+
+                // Clear existing options
+                sourceSelect.innerHTML = '<option value="">-- Select --</option>';
+                targetSelect.innerHTML = '<option value="">-- Select --</option>';
+
+                data.currencies.forEach(currency => {
+                    const option1 = document.createElement('option');
+                    option1.value = currency.code;
+                    option1.textContent = `${currency.flag || '🌐'} ${currency.code} - ${currency.name}`;
+                    sourceSelect.appendChild(option1);
+
+                    const option2 = document.createElement('option');
+                    option2.value = currency.code;
+                    option2.textContent = `${currency.flag || '🌐'} ${currency.code} - ${currency.name}`;
+                    targetSelect.appendChild(option2);
+                });
+
+            } catch (error) {
+                console.error('Error loading currencies:', error);
+                showToast('Error loading currencies', 'error');
+            }
+        }
+
+        async function getRate(base, quote) {
+            try {
+                const token = localStorage.getItem('access_token');
+                const response = await fetch(`/fx/rate/${base}/${quote}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    return await response.json();
+                }
+                return null;
+            } catch (error) {
+                console.error('Error getting rate:', error);
+                return null;
+            }
+        }
+
+        async function updateCurrencyDisplay() {
+            const source = document.getElementById('sourceCurrency').value;
+            const target = document.getElementById('targetCurrency').value;
+
+            if (!source || !target || source === target) {
+                document.getElementById('currencyDisplay').classList.add('hidden');
+                document.getElementById('predictionsDisplay').classList.add('hidden');
+                return;
+            }
+
+            // Get rate
+            const rateData = await getRate(source, target);
+            if (rateData) {
+                currentRate = rateData.rate;
+                document.getElementById('exchangeRate').textContent = currentRate.toFixed(4);
+                document.getElementById('sourceCode').textContent = source;
+                document.getElementById('targetCode').textContent = target;
+                document.getElementById('currencyDisplay').classList.remove('hidden');
+
+                // Show predictions
+                await updatePredictions(source, target);
+            }
+        }
+
+        async function updatePredictions(source, target) {
+            try {
+                const token = localStorage.getItem('access_token');
+                const response = await fetch('/predictions', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const pair = `${source}/${target}`;
+                    const prediction = data.predictions.find(p => p.pair === pair);
+
+                    if (prediction) {
+                        const rate = prediction.predicted_rate;
+                        const confidence = prediction.confidence || 0;
+
+                        // Generate predictions for different periods
+                        const variation = 0.01; // 1% variation per period
+                        document.getElementById('pred1d').textContent = `${(rate * (1 + variation * 1)).toFixed(4)} (${(confidence * 100).toFixed(0)}%)`;
+                        document.getElementById('pred1w').textContent = `${(rate * (1 + variation * 7)).toFixed(4)} (${(confidence * 100 * 0.9).toFixed(0)}%)`;
+                        document.getElementById('pred1m').textContent = `${(rate * (1 + variation * 30)).toFixed(4)} (${(confidence * 100 * 0.8).toFixed(0)}%)`;
+
+                        document.getElementById('predictionsDisplay').classList.remove('hidden');
+                    } else {
+                        document.getElementById('predictionsDisplay').classList.add('hidden');
+                    }
+                }
+            } catch (error) {
+                console.error('Error getting predictions:', error);
+            }
+        }
+
+        function toggleRuleInputs() {
+            const transferType = document.getElementById('transferType').value;
+            document.getElementById('targetRateGroup').classList.add('hidden');
+            document.getElementById('scheduleGroup').classList.add('hidden');
+            document.getElementById('predictiveGroup').classList.add('hidden');
+
+            if (transferType === 'target_rate') {
+                document.getElementById('targetRateGroup').classList.remove('hidden');
+            } else if (transferType === 'schedule') {
+                document.getElementById('scheduleGroup').classList.remove('hidden');
+            } else if (transferType === 'predictive') {
+                document.getElementById('predictiveGroup').classList.remove('hidden');
+            }
+        }
+
+        async function createRule() {
+            const source = document.getElementById('sourceCurrency').value;
+            const target = document.getElementById('targetCurrency').value;
+            const amount = document.getElementById('amount').value;
+            const transferType = document.getElementById('transferType').value;
+
+            // Validate
+            if (!source || !target) {
+                showToast('Please select source and target currencies', 'error');
+                return;
+            }
+            if (source === target) {
+                showToast('Source and target currencies must be different', 'error');
+                return;
+            }
+            if (!amount || parseFloat(amount) <= 0) {
+                showToast('Please enter a valid amount', 'error');
+                return;
+            }
+
+            const ruleData = {
+                pair_code: `${source}/${target}`,
+                rule_type: transferType,
+                amount: parseFloat(amount)
+            };
+
+            if (transferType === 'target_rate') {
+                const targetRate = document.getElementById('targetRate').value;
+                if (!targetRate || parseFloat(targetRate) <= 0) {
+                    showToast('Please enter a valid target rate', 'error');
+                    return;
+                }
+                ruleData.target_rate = parseFloat(targetRate);
+            }
+
+            if (transferType === 'schedule') {
+                const day = document.getElementById('scheduleDay').value;
+                const time = document.getElementById('scheduleTime').value;
+                if (!day || parseInt(day) < 1 || parseInt(day) > 31) {
+                    showToast('Please enter a valid day (1-31)', 'error');
+                    return;
+                }
+                if (!time) {
+                    showToast('Please select a time', 'error');
+                    return;
+                }
+                ruleData.schedule_day = parseInt(day);
+                ruleData.schedule_time = time;
+            }
+
+            if (transferType === 'predictive') {
+                const confidence = document.getElementById('minConfidence').value;
+                ruleData.min_confidence = parseFloat(confidence) / 100;
+            }
+
+            try {
+                const token = localStorage.getItem('access_token');
+                const btn = document.getElementById('createRuleBtn');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="loading"></span> Creating...';
+
+                const response = await fetch('/rules', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(ruleData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showToast(`✅ Rule created successfully! ID: ${data.id}`, 'success');
+                    // Reset form or redirect
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 2000);
+                } else {
+                    showToast(`❌ Error: ${data.detail || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                showToast(`❌ Error: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '🚀 Create Rule';
+            }
+        }
+
+        // Event listeners
+        document.getElementById('sourceCurrency').addEventListener('change', updateCurrencyDisplay);
+        document.getElementById('targetCurrency').addEventListener('change', updateCurrencyDisplay);
+        document.getElementById('transferType').addEventListener('change', toggleRuleInputs);
+        document.getElementById('createRuleBtn').addEventListener('click', createRule);
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCurrencies();
+            toggleRuleInputs();
+        });
+    </script>
+</body>
+</html>

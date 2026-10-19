@@ -1,0 +1,63 @@
+<?xml version="1.0" ?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.001.03" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <CstmrCdtTrfInitn>
+    <GrpHdr>
+      <MsgId>MSG202608230659118067899E</MsgId>
+      <CreDtTm>2026-08-23T06:59:11.157561Z</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <CtrlSum>100.00</CtrlSum>
+    </GrpHdr>
+    <PmtInf>
+      <PmtInfId>PI20260823065911</PmtInfId>
+      <PmtMtd>TRF</PmtMtd>
+      <BtchBookg>false</BtchBookg>
+      <NbOfTxs>1</NbOfTxs>
+      <CtrlSum>100.00</CtrlSum>
+      <PmtTpInf>
+        <SvcLvl>
+          <Cd>SWIFT</Cd>
+        </SvcLvl>
+        <LclInstrm>
+          <Cd>C2C</Cd>
+        </LclInstrm>
+      </PmtTpInf>
+      <ReqdExctnDt>2026-08-24</ReqdExctnDt>
+      <Dbtr>
+        <Nm>Astra Platform Treasury</Nm>
+      </Dbtr>
+      <DbtrAcct>
+        <Id>
+          <IBAN>ASTRA123456789</IBAN>
+        </Id>
+      </DbtrAcct>
+      <DbtrAgt>
+        <FinInstnId>
+          <BIC>ASTRAINBBXXX</BIC>
+        </FinInstnId>
+      </DbtrAgt>
+      <Amt>
+        <InstdAmt Ccy="USD">100.00</InstdAmt>
+      </Amt>
+      <ChrgBr>SHAR</ChrgBr>
+      <Cdtr>
+        <Nm>Test Beneficiary</Nm>
+      </Cdtr>
+      <CdtrAcct>
+        <Id>
+          <IBAN>TEST123456789</IBAN>
+        </Id>
+      </CdtrAcct>
+      <CdtrAgt>
+        <FinInstnId>
+          <BIC>TESTBICXXX</BIC>
+        </FinInstnId>
+      </CdtrAgt>
+      <Purp>
+        <Cd>TRAD</Cd>
+      </Purp>
+      <RmtInf>
+        <Ustrd>Test execution - Rule 1</Ustrd>
+      </RmtInf>
+    </PmtInf>
+  </CstmrCdtTrfInitn>
+</Document>

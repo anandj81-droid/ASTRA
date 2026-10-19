@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rule Testing - Astra Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 24px 32px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .header a {
+            color: white;
+            text-decoration: none;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: background 0.3s;
+        }
+        .header a:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .card h2 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 16px;
+        }
+        .form-group {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .form-group label {
+            font-weight: 500;
+            color: #555;
+        }
+        .form-group select {
+            padding: 10px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            min-width: 250px;
+            background: white;
+            cursor: pointer;
+        }
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #667eea;
+            color: #667eea;
+        }
+        .btn-outline:hover {
+            background: #667eea;
+            color: white;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .status-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        .log-container {
+            background: #1e1e2e;
+            color: #cdd6f4;
+            border-radius: 8px;
+            padding: 16px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .log-container .log-line {
+            padding: 2px 0;
+            border-bottom: 1px solid #313244;
+        }
+        .log-container .log-line:last-child {
+            border-bottom: none;
+        }
+        .log-container .timestamp {
+            color: #6c7086;
+        }
+        .log-container .info {
+            color: #89b4fa;
+        }
+        .log-container .success {
+            color: #a6e3a1;
+        }
+        .log-container .error {
+            color: #f38ba8;
+        }
+        .log-container .warning {
+            color: #f9e2af;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .rule-details {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 12px;
+        }
+        .rule-details table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .rule-details td {
+            padding: 6px 12px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .rule-details td:first-child {
+            font-weight: 600;
+            color: #555;
+            width: 150px;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #e0e0e0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+            max-width: 400px;
+        }
+        .toast-success { background: #10b981; }
+        .toast-error { background: #ef4444; }
+        .toast-info { background: #3b82f6; }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @media (max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .form-group { flex-direction: column; align-items: stretch; }
+            .form-group select { min-width: unset; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 Rule Testing Console</h1>
+            <a href="/dashboard">← Back to Dashboard</a>
+        </div>
+
+        <div class="card">
+            <h2>📋 Select Rule to Test</h2>
+            <div class="form-group">
+                <label for="ruleSelect">Choose Rule:</label>
+                <select id="ruleSelect">
+                    <option value="">-- Loading rules... --</option>
+                </select>
+                <button class="btn btn-primary" id="triggerBtn" disabled>
+                    🚀 Trigger Rule
+                </button>
+                <button class="btn btn-outline" id="refreshBtn">
+                    🔄 Refresh
+                </button>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="card">
+                <h2>📊 Rule Details</h2>
+                <div id="ruleDetails">
+                    <p style="color: #888;">Select a rule to see details</p>
+                </div>
+            </div>
+            <div class="card">
+                <h2>📈 Execution Result</h2>
+                <div id="executionResult">
+                    <p style="color: #888;">Trigger a rule to see results</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📝 Execution Log</h2>
+            <div class="log-container" id="logContainer">
+                <div class="log-line">
+                    <span class="timestamp">[System]</span>
+                    <span class="info">Ready for rule testing...</span>
+                </div>
+            </div>
+            <button class="btn btn-outline" id="clearLogBtn" style="margin-top: 12px;">
+                🗑️ Clear Log
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '';
+        let currentRuleId = null;
+        let isRunning = false;
+
+        // Toast notifications
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 5000);
+        }
+
+        // Add log entry
+        function addLog(message, type = 'info', timestamp = true) {
+            const container = document.getElementById('logContainer');
+            const line = document.createElement('div');
+            line.className = 'log-line';
+            const time = timestamp ? `[${new Date().toLocaleTimeString()}]` : '';
+            line.innerHTML = `
+                <span class="timestamp">${time}</span>
+                <span class="${type}">${message}</span>
+            `;
+            container.appendChild(line);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Load rules
+        async function loadRules() {
+            try {
+                const token = localStorage.getItem('access_token');
+                if (!token) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                const response = await fetch('/rules', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.status === 401) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                const data = await response.json();
+                const select = document.getElementById('ruleSelect');
+                select.innerHTML = '<option value="">-- Select a rule --</option>';
+
+                if (data.rules && data.rules.length > 0) {
+                    data.rules.forEach(rule => {
+                        const option = document.createElement('option');
+                        option.value = rule.id;
+                        const status = rule.status === 'active' ? '✅' : '❌';
+                        option.textContent = `${status} Rule #${rule.id} - ${rule.pair} (${rule.rule_type}) - $${rule.amount}`;
+                        select.appendChild(option);
+                    });
+                    document.getElementById('triggerBtn').disabled = false;
+                    addLog(`✅ Loaded ${data.rules.length} rules`, 'success');
+                } else {
+                    addLog('⚠️ No rules found. Create a rule first!', 'warning');
+                }
+            } catch (error) {
+                addLog(`❌ Error loading rules: ${error.message}`, 'error');
+                showToast('Error loading rules', 'error');
+            }
+        }
+
+        // Load rule details
+        async function loadRuleDetails(ruleId) {
+            try {
+                const token = localStorage.getItem('access_token');
+                const response = await fetch(`/rules/${ruleId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const rule = await response.json();
+                    currentRuleId = ruleId;
+                    
+                    const details = document.getElementById('ruleDetails');
+                    details.innerHTML = `
+                        <div class="rule-details">
+                            <table>
+                                <tr><td>Rule ID</td><td>#${rule.id}</td></tr>
+                                <tr><td>Pair</td><td>${rule.pair}</td></tr>
+                                <tr><td>Type</td><td>${rule.rule_type}</td></tr>
+                                <tr><td>Amount</td><td>$${rule.amount}</td></tr>
+                                <tr><td>Target Rate</td><td>${rule.target_rate || 'N/A'}</td></tr>
+                                <tr><td>Status</td><td><span class="status-badge ${rule.status === 'active' ? 'status-success' : 'status-error'}">${rule.status}</span></td></tr>
+                                <tr><td>Executions</td><td>${rule.execution_count || 0}</td></tr>
+                                <tr><td>Created</td><td>${new Date(rule.created_at).toLocaleString()}</td></tr>
+                            </table>
+                        </div>
+                    `;
+                    addLog(`📋 Loaded details for Rule #${rule.id}`, 'info');
+                }
+            } catch (error) {
+                addLog(`❌ Error loading rule details: ${error.message}`, 'error');
+            }
+        }
+
+        // Trigger rule execution
+        async function triggerRule() {
+            const ruleId = document.getElementById('ruleSelect').value;
+            if (!ruleId) {
+                showToast('Please select a rule first', 'error');
+                return;
+            }
+
+            if (isRunning) {
+                showToast('Already running a test...', 'warning');
+                return;
+            }
+
+            isRunning = true;
+            const btn = document.getElementById('triggerBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Executing...';
+
+            addLog(`🚀 Triggering Rule #${ruleId}...`, 'info');
+
+            const resultDiv = document.getElementById('executionResult');
+            resultDiv.innerHTML = '<p style="color: #888;">⏳ Executing rule...</p>';
+
+            try {
+                const token = localStorage.getItem('access_token');
+                const startTime = Date.now();
+
+                // Trigger the rule execution
+                const response = await fetch(`/rules/${ruleId}/trigger`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Show success
+                    resultDiv.innerHTML = `
+                        <div class="rule-details">
+                            <table>
+                                <tr><td>Status</td><td><span class="status-badge status-success">✅ EXECUTED</span></td></tr>
+                                <tr><td>Time</td><td>${elapsed}s</td></tr>
+                                <tr><td>Transaction ID</td><td>${data.transaction_id || 'N/A'}</td></tr>
+                                <tr><td>Bank Reference</td><td>${data.bank_reference || 'N/A'}</td></tr>
+                                <tr><td>ISO 20022</td><td>${data.iso_message_path ? '✅ Generated' : '❌ Not Generated'}</td></tr>
+                                <tr><td>Bank API</td><td>${data.bank_api_called ? '✅ Called' : '❌ Not Called'}</td></tr>
+                                <tr><td>Status</td><td>${data.status || 'completed'}</td></tr>
+                            </table>
+                            ${data.iso_message_path ? `<p style="margin-top: 12px;"><strong>📄 ISO Message:</strong> <code>${data.iso_message_path}</code></p>` : ''}
+                            ${data.xml_preview ? `<details style="margin-top: 12px;"><summary>📄 View XML</summary><pre style="background: #f8f9fa; padding: 12px; border-radius: 6px; overflow: auto; max-height: 200px; font-size: 12px;">${data.xml_preview}</pre></details>` : ''}
+                        </div>
+                    `;
+                    addLog(`✅ Rule #${ruleId} executed successfully in ${elapsed}s`, 'success');
+                    showToast('Rule executed successfully!', 'success');
+                    
+                    // Refresh rule details
+                    await loadRuleDetails(ruleId);
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="rule-details">
+                            <table>
+                                <tr><td>Status</td><td><span class="status-badge status-error">❌ FAILED</span></td></tr>
+                                <tr><td>Time</td><td>${elapsed}s</td></tr>
+                                <tr><td>Error</td><td>${data.detail || data.message || 'Unknown error'}</td></tr>
+                            </table>
+                        </div>
+                    `;
+                    addLog(`❌ Rule #${ruleId} failed: ${data.detail || 'Unknown error'}`, 'error');
+                    showToast('Rule execution failed', 'error');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="rule-details">
+                        <table>
+                            <tr><td>Status</td><td><span class="status-badge status-error">❌ ERROR</span></td></tr>
+                            <tr><td>Error</td><td>${error.message}</td></tr>
+                        </table>
+                    </div>
+                `;
+                addLog(`❌ Error triggering rule: ${error.message}`, 'error');
+                showToast('Error triggering rule', 'error');
+            } finally {
+                isRunning = false;
+                btn.disabled = false;
+                btn.innerHTML = '🚀 Trigger Rule';
+            }
+        }
+
+        // Event listeners
+        document.getElementById('ruleSelect').addEventListener('change', function() {
+            const ruleId = this.value;
+            if (ruleId) {
+                loadRuleDetails(ruleId);
+            } else {
+                document.getElementById('ruleDetails').innerHTML = '<p style="color: #888;">Select a rule to see details</p>';
+            }
+        });
+
+        document.getElementById('triggerBtn').addEventListener('click', triggerRule);
+
+        document.getElementById('refreshBtn').addEventListener('click', function() {
+            loadRules();
+            showToast('Rules refreshed', 'info');
+        });
+
+        document.getElementById('clearLogBtn').addEventListener('click', function() {
+            document.getElementById('logContainer').innerHTML = `
+                <div class="log-line">
+                    <span class="timestamp">[System]</span>
+                    <span class="info">Log cleared</span>
+                </div>
+            `;
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRules();
+            addLog('🔧 Rule Testing Console initialized', 'info');
+        });
+    </script>
+</body>
+</html>
